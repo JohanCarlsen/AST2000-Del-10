@@ -1,5 +1,5 @@
 '''
-KODESNUT FRA StarPopulation OG EGEN KODE
+KODESNUTT FRA StarPopulation OG EGEN KODE
 '''
 
 import numpy as np
@@ -43,13 +43,14 @@ EGEN KODE
 seed = utils.get_seed('antonabr')
 system = SolarSystem(seed)
 
-m_sun = const.m_sun # sun mass in kg
+m_sun = const.m_sun                         # sun mass in kg
 star_temperature = system.star_temperature  # star temperature in Kelvin
-star_radius = system.star_radius * 1000    # star radius in m
-star_mass_m_sun = system.star_mass  # star mass in m_sun
-star_mass_kg = system.star_mass * m_sun    # star mass in kg
-sigma = const.sigma # Stefan-Boltzmann constant in W/m^2/K^4
-L_sun = const.L_sun # sun luminosity in W
+star_radius = system.star_radius * 1000     # star radius in m
+star_mass_m_sun = system.star_mass          # star mass in m_sun
+star_mass_kg = system.star_mass * m_sun     # star mass in kg
+sigma = const.sigma                         # Stefan-Boltzmann constant in W/m^2/K^4
+L_sun = const.L_sun                         # sun luminosity in W
+T_sun = 5778                                # K
 
 L_star = (4 * np.pi * star_radius**2 * sigma * star_temperature**4) / L_sun  # star luminosity in L_sun, W
 
@@ -65,6 +66,8 @@ L_sun:  3.828e+26 W
 '''
 
 ax.plot(star_temperature, L_star, 'ro', lw=1)
+ax.set_title('Hertzsprung-Russel diagram')
+# plt.show()
 
 
 # task 2
@@ -87,6 +90,28 @@ t_life = t_mainsequence_sun / star_mass_m_sun**3    # est time of life on main s
 
 
 # task 3
+
+prop_L = star_mass_m_sun**4 * L_sun             # proportion luminosity
+prop_M = (star_temperature/T_sun)**2 * m_sun    # proportion mass
+
+# print(f'Using proportions:\nLuminosity:\t{prop_L:.3e} W\nMass:\t\t{prop_M:.3e} kg\n\n\
+# Correct values:\nLuminosity:\t{L_star*L_sun:.3e} W\nMass:\t\t{star_mass_kg:.3e} kg\n\n\
+# Errors:\t\tRelative\tPercent\nLuminosity:\t{abs(prop_L-(L_star*L_sun))/(L_star*L_sun):.5f}\t\t\
+# {(abs(prop_L-(L_star*L_sun))/(L_star*L_sun))*100:.3f} %\n\
+# Mass:\t\t{abs(prop_M-star_mass_kg)/star_mass_kg:.5f}\t\t{(abs(prop_M-star_mass_kg)/star_mass_kg)*100:.3f} %')
+'''
+Using proportions:
+Luminosity:     5.596e+27 W
+Mass:           3.798e+30 kg
+
+Correct values:
+Luminosity:     3.251e+27 W
+Mass:           3.888e+30 kg
+
+Errors:         Relative        Percent
+Luminosity:     0.72133         72.133 %
+Mass:           0.02326         2.326 %
+'''
 
 
 '''B'''
@@ -114,7 +139,7 @@ mu = (0.75 * m_H / m_H) + (0.25 * m_He / m_H)   # mean molecular weight in m_H
 # task 2
 
 def Jeans_radius(mu, M, T):
-    '''Find upper limit to GMC-radius'''
+    '''Find limit to GMC-radius'''
 
     R = (G * (mu*m_H) * M) / (5 * k * T)
 
@@ -122,21 +147,38 @@ def Jeans_radius(mu, M, T):
 
 max_R = Jeans_radius(mu, GMC_mass_kg, GMC_temperature)
 
-# print(f'Radius upper limit: {max_R:e} km')
+# print(f'Radius upper limit: {max_R/1000:e} km')
 '''
-Radius upper limit: 1.100648e+15 km
+Radius upper limit: 1.100648e+12 km
 '''
 
-GMC_radius = 1e14   # just below max, in km
+GMC_radius = 0.8*max_R   # just below max, in m
 
-GMC_lum = (4 * np.pi * (GMC_radius*1000)**2 * sigma * GMC_temperature**4) / L_sun
+GMC_lum = (4 * np.pi * GMC_radius**2 * sigma * GMC_temperature**4) / L_sun
 
 # print(f'{GMC_lum:e}')
 '''
-1.861443e+05
+1.861443e+01
 '''
+# kodesnutt fra StarPopulation
+fig, ax = plt.subplots()
+ax.scatter(T, L, c=c, s=s, alpha=0.8, edgecolor='k', linewidth=0.05)
 
-# ax.plot(GMC_temperature, GMC_lum, 'ko', lw=1)
+ax.set_xlabel('Temperature [K]')
+ax.invert_xaxis()
+ax.set_xscale('log')
+# ax.set_xticks([38000, 18000, 12000, 6000, 3000, 0])
+# ax.set_xticklabels(list(map(str, ax.get_xticks())))
+ax.set_xlim(38000, 1)
+ax.minorticks_off()
+
+ax.set_ylabel(r'Luminosity [$L_\odot$]')
+ax.set_yscale('log')
+ax.set_ylim(1e-4, 1e6)
+
+ax.plot(star_temperature, L_star, 'ro', lw=1, label='Star')
+ax.plot(GMC_temperature, GMC_lum, 'ko', lw=1, label='GMC')
 ax.set_title('Hertzsprung-Russel diagram')
-# plt.savefig('HR_diagram_with_star.png')
+# plt.savefig('HR_diagram_with_star_and_GMC.png')
+plt.legend()
 # plt.show()
